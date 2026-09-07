@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain — Cognitive Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'JetBrains Mono', monospace;
+    background:#020617; color:#fff; min-height:100vh; padding:2rem;
+  }
+  .container { max-width:1200px; margin:0 auto; }
+  .header { margin-bottom:2rem; }
+  .header-row { display:flex; align-items:center; gap:1rem; margin-bottom:.5rem; }
+  .pulse-dot { width:12px; height:12px; background:#22d3ee; border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  h1 { font-size:1.5rem; font-weight:700; letter-spacing:-.025em; }
+  .subtitle { color:#94a3b8; font-size:.875rem; margin-left:1.75rem; }
+  .diagram-container {
+    background:rgba(15,23,42,.5); border-radius:1rem;
+    border:1px solid #1e293b; padding:1.5rem; overflow-x:auto;
+  }
+  svg { width:100%; min-width:900px; display:block; }
+  .footer { text-align:center; margin-top:1.5rem; color:#475569; font-size:.75rem; line-height:1.6; }
+  .footer b { color:#94a3b8; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-row">
+      <div class="pulse-dot"></div>
+      <h1>Agent Brain — Cognitive Architecture</h1>
+    </div>
+    <p class="subtitle">Three cognitive layers on a neuroscience-backed memory store · harness-agnostic · fully local · September 2026</p>
+  </div>
+
+  <!-- ============ MAIN DIAGRAM ============ -->
+  <div class="diagram-container">
+  <svg viewBox="0 0 1000 900" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="ah" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#64748b"/>
+      </marker>
+      <marker id="ah-cyan" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#22d3ee"/>
+      </marker>
+      <marker id="ah-amber" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#fbbf24"/>
+      </marker>
+      <marker id="ah-rose" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#fb7185"/>
+      </marker>
+      <marker id="ah-emerald" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#34d399"/>
+      </marker>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grid)"/>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ROW 1 · y 30-120 : Any Harness (center) + model roles
+         All arrows in this file are drawn ONLY in the gaps
+         between rows — never across a component box.
+         ══════════════════════════════════════════════════════════ -->
+
+    <!-- Model roles (flank, smaller) -->
+    <rect x="20" y="40" width="190" height="80" rx="6" fill="rgba(120,53,15,.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="115" y="62" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">Local VLM · 1–2B</text>
+    <text x="115" y="77" fill="#94a3b8" font-size="8" text-anchor="middle">must see images (L1, L7)</text>
+    <text x="115" y="94" fill="#fbbf24" font-size="8" text-anchor="middle">ref: MiniCPM-V 4.6</text>
+    <text x="115" y="108" fill="#64748b" font-size="7" text-anchor="middle">alts: SmolVLM2 · LFM2-VL · InternVL3</text>
+
+    <rect x="790" y="40" width="190" height="80" rx="6" fill="rgba(120,53,15,.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="885" y="62" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">Local text LLM · 1–2B</text>
+    <text x="885" y="77" fill="#94a3b8" font-size="8" text-anchor="middle">JSON + tools (L6)</text>
+    <text x="885" y="94" fill="#fbbf24" font-size="8" text-anchor="middle">ref: MiniCPM5-1B</text>
+    <text x="885" y="108" fill="#64748b" font-size="7" text-anchor="middle">alts: Qwen3-0.6B · Llama3.2-1B · Gemma3-1B</text>
+
+    <!-- Harness (center) -->
+    <rect x="260" y="40" width="480" height="80" rx="6" fill="rgba(30,41,59,.5)" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="500" y="66" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">ANY AGENT HARNESS</text>
+    <text x="500" y="83" fill="#94a3b8" font-size="9" text-anchor="middle">Hermes · Claude Code · raw tool-loop · …</text>
+    <text x="500" y="100" fill="#475569" font-size="8" text-anchor="middle">owns triggers, hooks, scheduling — brain is NOT harness-specific</text>
+
+    <!-- ══════ GAP 1 · y 120-175 : model-serve dashed lines (end ABOVE brain box) ══════ -->
+    <path d="M 210 120 L 210 145 L 300 145 L 300 172" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#ah-amber)"/>
+    <path d="M 790 120 L 790 145 L 700 145 L 700 172" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#ah-amber)"/>
+    <text x="255" y="140" fill="#64748b" font-size="7" text-anchor="middle">serves L1 · L7</text>
+    <text x="745" y="140" fill="#64748b" font-size="7" text-anchor="middle">serves L6</text>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ROW 2 · y 175-395 : AGENT BRAIN boundary + 3 layers
+         ══════════════════════════════════════════════════════════ -->
+    <rect x="60" y="175" width="880" height="220" rx="12" fill="rgba(251,191,36,.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+    <text x="76" y="197" fill="#fbbf24" font-size="10" font-weight="600">AGENT BRAIN — one per machine · serves every profile</text>
+
+    <!-- L1 -->
+    <rect x="95" y="215" width="245" height="160" rx="6" fill="rgba(8,51,68,.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="217" y="240" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">L1 · PERCEPTION GATE</text>
+    <text x="217" y="262" fill="#94a3b8" font-size="8" text-anchor="middle">classify: event | fact | emotion</text>
+    <text x="217" y="275" fill="#94a3b8" font-size="8" text-anchor="middle">          | threat | noise</text>
+    <text x="217" y="294" fill="#94a3b8" font-size="8" text-anchor="middle">salience 0–1 →</text>
+    <text x="217" y="307" fill="#94a3b8" font-size="8" text-anchor="middle">encode | discard | escalate</text>
+    <text x="217" y="330" fill="#64748b" font-size="8" text-anchor="middle">the gate is not a logger —</text>
+    <text x="217" y="343" fill="#64748b" font-size="8" text-anchor="middle">low-salience items are dropped</text>
+    <text x="217" y="364" fill="#22d3ee" font-size="8" text-anchor="middle">auto-stores above threshold</text>
+
+    <!-- L6 -->
+    <rect x="378" y="215" width="245" height="160" rx="6" fill="rgba(120,53,15,.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="500" y="240" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">L6 · PREDICTIVE ENGINE</text>
+    <text x="500" y="262" fill="#94a3b8" font-size="8" text-anchor="middle">scan episodic sequences → patterns</text>
+    <text x="500" y="275" fill="#94a3b8" font-size="8" text-anchor="middle">predict next outcome + confidence</text>
+    <text x="500" y="298" fill="#94a3b8" font-size="8" text-anchor="middle">every prediction gets an ID;</text>
+    <text x="500" y="311" fill="#94a3b8" font-size="8" text-anchor="middle">every outcome scores against it</text>
+    <text x="500" y="334" fill="#64748b" font-size="8" text-anchor="middle">accuracy is a metric,</text>
+    <text x="500" y="347" fill="#64748b" font-size="8" text-anchor="middle">not a vibe</text>
+
+    <!-- L7 -->
+    <rect x="661" y="215" width="245" height="160" rx="6" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="783" y="240" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">L7 · DREAM CYCLE</text>
+    <text x="783" y="262" fill="#94a3b8" font-size="8" text-anchor="middle">offline synthesis — never inline</text>
+    <text x="783" y="279" fill="#94a3b8" font-size="8" text-anchor="middle">memory graph (NetworkX):</text>
+    <text x="783" y="292" fill="#94a3b8" font-size="8" text-anchor="middle">co-occur · temporal · semantic</text>
+    <text x="783" y="311" fill="#94a3b8" font-size="8" text-anchor="middle">cross-domain connections</text>
+    <text x="783" y="324" fill="#94a3b8" font-size="8" text-anchor="middle">→ insights → persisted facts</text>
+    <text x="783" y="347" fill="#64748b" font-size="8" text-anchor="middle">boost connected · decay isolated</text>
+    <text x="783" y="364" fill="#fb7185" font-size="8" text-anchor="middle">every profile can recall them</text>
+
+    <!-- ══════ GAP 2 · y 395-455 : layer→store arrows (clean vertical drops) ══════ -->
+    <line x1="217" y1="395" x2="217" y2="450" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#ah-cyan)"/>
+    <text x="228" y="428" fill="#22d3ee" font-size="7">episodes</text>
+
+    <line x1="500" y1="395" x2="500" y2="450" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#ah-amber)"/>
+    <text x="511" y="428" fill="#fbbf24" font-size="7">read patterns · write predictions</text>
+
+    <line x1="783" y1="395" x2="783" y2="450" stroke="#fb7185" stroke-width="1.2" marker-end="url(#ah-rose)"/>
+    <text x="794" y="428" fill="#fb7185" font-size="7">reads all · writes links + insights</text>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ROW 3 · y 455-590 : ZENBRAIN STORE
+         ══════════════════════════════════════════════════════════ -->
+    <rect x="60" y="455" width="880" height="135" rx="12" fill="rgba(76,29,149,.08)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="8,4"/>
+    <text x="76" y="477" fill="#a78bfa" font-size="10" font-weight="600">ZENBRAIN MEMORY STORE — SQLite + WAL · one DB per profile · never shared across hosts</text>
+
+    <rect x="90"  y="490" width="150" height="70" rx="6" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="165" y="512" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">episodic</text>
+    <text x="165" y="527" fill="#94a3b8" font-size="7" text-anchor="middle">events + emotional_weight</text>
+    <text x="165" y="540" fill="#94a3b8" font-size="7" text-anchor="middle">(no confidence col)</text>
+    <text x="165" y="553" fill="#64748b" font-size="7" text-anchor="middle">decays unless accessed</text>
+
+    <rect x="260" y="490" width="150" height="70" rx="6" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="335" y="512" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">semantic</text>
+    <text x="335" y="527" fill="#94a3b8" font-size="7" text-anchor="middle">facts + confidence</text>
+    <text x="335" y="540" fill="#94a3b8" font-size="7" text-anchor="middle">source-tagged</text>
+    <text x="335" y="553" fill="#64748b" font-size="7" text-anchor="middle">FSRS review scheduling</text>
+
+    <rect x="430" y="490" width="150" height="70" rx="6" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="505" y="512" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">procedural</text>
+    <text x="505" y="527" fill="#94a3b8" font-size="7" text-anchor="middle">steps · tools · outcome</text>
+    <text x="505" y="540" fill="#94a3b8" font-size="7" text-anchor="middle">success_rate</text>
+    <text x="505" y="553" fill="#64748b" font-size="7" text-anchor="middle">execution_count</text>
+
+    <rect x="600" y="490" width="150" height="70" rx="6" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="675" y="512" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">core</text>
+    <text x="675" y="527" fill="#94a3b8" font-size="7" text-anchor="middle">pinned · non-decaying</text>
+    <text x="675" y="540" fill="#94a3b8" font-size="7" text-anchor="middle">identity + rules</text>
+    <text x="675" y="553" fill="#64748b" font-size="7" text-anchor="middle">threat promotes here</text>
+
+    <rect x="770" y="490" width="150" height="70" rx="6" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="845" y="512" fill="#fff" font-size="9" font-weight="600" text-anchor="middle">cross-links</text>
+    <text x="845" y="527" fill="#94a3b8" font-size="7" text-anchor="middle">entity_a ↔ entity_b</text>
+    <text x="845" y="540" fill="#94a3b8" font-size="7" text-anchor="middle">own id PK</text>
+    <text x="845" y="553" fill="#64748b" font-size="7" text-anchor="middle">dream-cycle written</text>
+
+    <!-- ══════ GAP 3 · y 590-640 : store → algorithms (single clean drop) ══════ -->
+    <line x1="500" y1="590" x2="500" y2="638" stroke="#34d399" stroke-width="1.2" marker-end="url(#ah-emerald)"/>
+    <text x="512" y="618" fill="#34d399" font-size="7">behavior leans on these modules</text>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ROW 4 · y 640-712 : ALGORITHMS
+         ══════════════════════════════════════════════════════════ -->
+    <rect x="60" y="640" width="880" height="72" rx="12" fill="rgba(6,78,59,.15)" stroke="#34d399" stroke-width="1" stroke-dasharray="8,4"/>
+    <text x="76" y="660" fill="#34d399" font-size="10" font-weight="600">ZENBRAIN ALGORITHM MODULES</text>
+    <text x="500" y="680" fill="#94a3b8" font-size="8" text-anchor="middle">fsrs · ebbinghaus decay · hebbian co-activation · bayesian confidence · sleep-consolidation</text>
+    <text x="500" y="696" fill="#94a3b8" font-size="8" text-anchor="middle">dopamine reward-error · emotional tagging · pagerank importance · hopfield recall · surprise-gradient</text>
+
+    <!-- ══════ GAP 4 · y 712-760 : loop-back path (outer channel, touches nothing) ══════ -->
+    <path d="M 940 676 L 962 676 L 962 760" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="950" y="722" fill="#475569" font-size="7" text-anchor="middle" transform="rotate(90 950 722)">insights feed back</text>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ROW 5 · y 760-835 : LEARNING LOOP (chain, no overlaps)
+         ══════════════════════════════════════════════════════════ -->
+    <rect x="60" y="760" width="880" height="75" rx="12" fill="rgba(30,41,59,.4)" stroke="#1e293b" stroke-width="1"/>
+    <text x="76" y="780" fill="#64748b" font-size="9" font-weight="600">LEARNING LOOP</text>
+
+    <g text-anchor="middle">
+      <text x="150" y="808" fill="#22d3ee" font-size="9" font-weight="600">👁 perceive</text>
+      <text x="150" y="822" fill="#475569" font-size="7">filter noise</text>
+      <text x="295" y="808" fill="#a78bfa" font-size="9" font-weight="600">💾 store</text>
+      <text x="295" y="822" fill="#475569" font-size="7">salient only</text>
+      <text x="440" y="808" fill="#34d399" font-size="9" font-weight="600">🔗 connect</text>
+      <text x="440" y="822" fill="#475569" font-size="7">graph edges</text>
+      <text x="585" y="808" fill="#fbbf24" font-size="9" font-weight="600">🔮 predict</text>
+      <text x="585" y="822" fill="#475569" font-size="7">score outcomes</text>
+      <text x="730" y="808" fill="#fb7185" font-size="9" font-weight="600">🌙 dream</text>
+      <text x="730" y="822" fill="#475569" font-size="7">consolidate · prune</text>
+      <text x="872" y="808" fill="#fff" font-size="9" font-weight="600">💡 insight</text>
+      <text x="872" y="822" fill="#475569" font-size="7">all profiles recall</text>
+    </g>
+
+    <!-- loop arrows in the gap between the two text lines -->
+    <line x1="192" y1="805" x2="262" y2="805" stroke="#64748b" stroke-width="1" marker-end="url(#ah)"/>
+    <line x1="337" y1="805" x2="407" y2="805" stroke="#64748b" stroke-width="1" marker-end="url(#ah)"/>
+    <line x1="482" y1="805" x2="552" y2="805" stroke="#64748b" stroke-width="1" marker-end="url(#ah)"/>
+    <line x1="627" y1="805" x2="697" y2="805" stroke="#64748b" stroke-width="1" marker-end="url(#ah)"/>
+    <line x1="772" y1="805" x2="842" y2="805" stroke="#64748b" stroke-width="1" marker-end="url(#ah)"/>
+
+    <!-- loop-back: rises in the right channel (x=962) then turns left along
+         the empty strip ABOVE row 1 (y=20), terminating over the harness -->
+    <path d="M 962 760 L 962 20 L 500 20 L 500 36" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ah)"/>
+    <text x="975" y="420" fill="#475569" font-size="7" text-anchor="middle" transform="rotate(90 975 420)">the loop closes</text>
+
+    <!-- ══════ LEGEND (below everything, no overlap) ══════ -->
+    <g>
+      <text x="76" y="868" fill="#fff" font-size="9" font-weight="600">Legend</text>
+      <rect x="150" y="860" width="14" height="9" rx="2" fill="rgba(30,41,59,.5)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="170" y="868" fill="#64748b" font-size="7">Harness (external)</text>
+      <rect x="290" y="860" width="14" height="9" rx="2" fill="rgba(8,51,68,.4)" stroke="#22d3ee" stroke-width="1"/>
+      <text x="310" y="868" fill="#64748b" font-size="7">Brain layer</text>
+      <rect x="410" y="860" width="14" height="9" rx="2" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="430" y="868" fill="#64748b" font-size="7">Memory store</text>
+      <rect x="530" y="860" width="14" height="9" rx="2" fill="rgba(6,78,59,.15)" stroke="#34d399" stroke-width="1"/>
+      <text x="550" y="868" fill="#64748b" font-size="7">Algorithms</text>
+      <rect x="650" y="860" width="14" height="9" rx="2" fill="rgba(120,53,15,.3)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="670" y="868" fill="#64748b" font-size="7">Local models (operator's choice)</text>
+      <line x1="855" y1="864" x2="869" y2="864" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="875" y="868" fill="#64748b" font-size="7">Model serve</text>
+    </g>
+  </svg>
+  </div>
+
+  <p class="footer">
+    <b>Built by El</b> (architecture, vision, integration) · <b>system-bot</b> (Hermes Agent, Nous Research — implementation, testing)<br>
+    ZenBrain by Alexander Bering / Zensation AI (Apache-2.0) · Models by OpenBMB · Companion doc: <span style="color:#64748b">agent-brain-spec.md</span>
+  </p>
+
+</div>
+</body>
+</html>

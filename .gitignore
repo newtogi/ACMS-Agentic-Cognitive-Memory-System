@@ -1,0 +1,10 @@
+# Runtime state — per-machine, never commit
+dream_journal.json
+predictions.json
+__pycache__/
+*.pyc
+
+# Local environment
+.env
+*.db
+*.sqlite
