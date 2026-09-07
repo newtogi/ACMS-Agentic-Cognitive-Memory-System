@@ -1,6 +1,7 @@
 # Agent Brain
 
-**A cognitive memory architecture for AI agents.** Three brain layers — perception, prediction, dream consolidation — wired onto [ZenBrain](https://github.com/zensation-ai/zenbrain), a neuroscience-inspired memory store. Harness-agnostic: bolts onto Hermes, Claude Code, a raw tool loop, or anything that can call a function. Fully local. Zero API cost.
+**A cognitive memory architecture for AI agents.** Three brain layers Perception, Prediction, Dream consolidation are wired onto [ZenBrain](https://github.com/zensation-ai/zenbrain), a neuroscience-inspired memory store. Harness-agnostic: bolts onto Hermes, Claude Code, a raw tool loop, or anything that can call a function. Fully local. Zero API cost.
+All you need to do is to point your agent to this repo or feed agent-brain-spec.md file. choose which local models to run and enjoy!!
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-22d3ee.svg)](#license)
 [![Python](https://img.shields.io/badge/Python-3.11+-a78bfa.svg)](https://www.python.org)
