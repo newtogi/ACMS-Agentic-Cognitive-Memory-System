@@ -26,7 +26,7 @@ If a gate fails, stop and report — do not improvise around a broken foundation
 | Architecture, vision, integration | **El** |
 | Implementation, testing, documentation | **system-bot** (Hermes Agent, Nous Research) |
 | ZenBrain memory engine | Alexander Bering / Zensation AI ([github.com/zensation-ai/zenbrain](https://github.com/zensation-ai/zenbrain), DOI 10.5281/zenodo.19353663) |
-| Perception/prediction models | OpenBMB — MiniCPM-V 4.6, MiniCPM5-1B |
+| Perception model | OpenBMB — MiniCPM-V 4.6 · Prediction model: Qwen/Qwen3-4B-Instruct |
 
 ---
 
@@ -94,7 +94,7 @@ images/screenshots) and one **text** (L6 — tool-calling and reasoning). Refere
 pair, proven on a 4 GB VRAM laptop with hot-swap serving:
 
 - Multimodal: **MiniCPM-V 4.6** (1.3B, SigLIP2 + Qwen3.5-0.8B, mixed 4×/16× visual token compression)
-- Text: **MiniCPM5-1B** (1.08B, LlamaForCausalLM, RL+OPD post-trained, 131K context)
+- Text: **Qwen3-4B-Instruct** (4.0B, non-thinking via /no_think + think:false, 262K context, runs CPU-only)
 
 Suitable alternates: SmolVLM2-500M / LFM2-VL-3B / InternVL3-2B for the vision role;
 Qwen3-0.6B / Llama3.2-1B / Gemma3-1B for the text role. Requirements: local
@@ -1126,7 +1126,7 @@ class PatternDetector:
 """
 Predictive Engine — Agent Brain L6.
 
-Uses pattern detection + MiniCPM5-1B via Ollama to generate predictions from
+Uses pattern detection + Qwen3-4B-Instruct via Ollama (CPU-only) to generate predictions from
 current state, tracks prediction accuracy over time, and stores everything in
 ~/agent-brain/predictions.json.
 """
@@ -2409,5 +2409,6 @@ Failure at any step → see §8.
 - Open Spaced Repetition — [FSRS](https://github.com/open-spaced-repetition/fsrs4anki)
 - Codebook Agent (2026). Amortized Topology Design for LLM Multi-Agent Systems. arXiv:2609.02264 — agent-communication topology
 - Selective Forgetting (2026). Graph-based memory pruning. arXiv:2608.28978 — importance = 0.35·recency + 0.25·frequency + 0.20·centrality + 0.20·decay
-- OpenBMB — MiniCPM-V 4.6 (LLaVA-UHD v4 intra-ViT compression); MiniCPM5-1B (RL + On-Policy Distillation)
+- OpenBMB — MiniCPM-V 4.6 (LLaVA-UHD v4 intra-ViT compression)
+- Qwen — Qwen3-4B-Instruct (non-thinking mode, Apache-2.0)
 - Bering, A. (2026). ZenBrain: A Neuroscience-Inspired 7-Layer Memory Architecture for Autonomous AI Systems. arXiv:2604.23878

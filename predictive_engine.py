@@ -37,7 +37,10 @@ DATA_DIR = Path(os.environ.get(
 ))
 PREDICTIONS_FILE = DATA_DIR / "predictions.json"
 OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-MODEL_NAME = os.environ.get("PREDICTION_MODEL", "openbmb/minicpm5")
+MODEL_NAME = os.environ.get("PREDICTION_MODEL", "qwen3:4b")
+# 0 = CPU only (L6 is a per-task call, not a hot loop; keeps VRAM free for
+# the perception VLM). Set PREDICTION_NUM_GPU=99 to use the GPU instead.
+NUM_GPU = int(os.environ.get("PREDICTION_NUM_GPU", "0"))
 
 
 # ---------------------------------------------------------------------------
@@ -62,26 +65,46 @@ def _save_predictions(data: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def _ollama_generate(prompt: str, *, system: str = "", temperature: float = 0.3) -> str:
-    """Call Ollama /api/generate and return the response text."""
+    """Call Ollama /api/chat and return the response content.
+
+    Uses the chat endpoint (not /api/generate) because chat-tuned models
+    like Qwen3 require their chat template. The full anti-thinking recipe:
+      - "/no_think" prefix  : disables <think> blocks in hybrid models
+      - "think": False      : stops Ollama from routing output to a
+                              separate thinking channel
+      - "format": "json"    : grammar-constrains output to valid JSON
+      - num_predict 512     : bounds runaway generation
+    All four are needed together; any one missing lets a hybrid model burn
+    the entire token budget on reasoning before emitting content.
+    """
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": "/no_think\n" + prompt})
+
     payload = json.dumps({
         "model": MODEL_NAME,
-        "prompt": prompt,
-        "system": system,
+        "messages": messages,
         "stream": False,
         "format": "json",
-        "options": {"temperature": temperature, "num_predict": 512},
+        "think": False,
+        "options": {
+            "temperature": temperature,
+            "num_predict": 512,
+            "num_gpu": NUM_GPU,
+        },
     }).encode()
 
     req = urllib.request.Request(
-        f"{OLLAMA_URL}/api/generate",
+        f"{OLLAMA_URL}/api/chat",
         data=payload,
         headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=300) as resp:
             body = json.loads(resp.read().decode())
-            return body.get("response", "").strip()
+            return body.get("message", {}).get("content", "").strip()
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
         return f"[ollama error: {exc}]"
 

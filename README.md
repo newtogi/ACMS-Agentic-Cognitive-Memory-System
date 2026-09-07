@@ -101,7 +101,7 @@ Two small local models. Reference pair, proven on a 4 GB VRAM laptop:
 | Role | Reference | Alternatives |
 |---|---|---|
 | Multimodal (L1 + L7) — must see images | [MiniCPM-V 4.6](https://huggingface.co/openbmb/MiniCPM-V-4.6) · 1.3B | SmolVLM2-500M · LFM2-VL-3B · InternVL3-2B |
-| Text (L6) — JSON + tools | [MiniCPM5-1B](https://huggingface.co/openbmb/MiniCPM5-1B) · 1.08B | Qwen3-0.6B · Llama3.2-1B · Gemma3-1B |
+| Text (L6) — JSON + tools | [Qwen3-4B-Instruct](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) · 4.0B, CPU-only | MiniCPM5-1B · Llama3.2-3B · Gemma3-1B |
 
 **Requirements:** local serving (Ollama, llama.cpp, vLLM — anything OpenAI-compatible) · ≤ 2B params · JSON-mode capable · vision for the multimodal slot. Model names are config, not code — swap freely.
 
@@ -172,7 +172,7 @@ agent-brain/
 | **Architecture, vision, integration** | El |
 | **Implementation, testing, documentation** | system-bot (Hermes Agent, Nous Research) |
 | **Memory engine** | [ZenBrain](https://github.com/zensation-ai/zenbrain) — Alexander Bering / Zensation AI · arXiv:2604.23878 · DOI 10.5281/zenodo.19353663 |
-| **Reference models** | [OpenBMB](https://huggingface.co/OpenBMB) — MiniCPM-V 4.6 (LLaVA-UHD v4), MiniCPM5-1B (RL + OPD) |
+| **Reference models** | [OpenBMB](https://huggingface.co/OpenBMB) — MiniCPM-V 4.6 (LLaVA-UHD v4) · [Qwen](https://huggingface.co/Qwen) — Qwen3-4B-Instruct (L6, CPU) |
 | **Framework** | [Hermes Agent](https://hermes-agent.nousresearch.com) — Nous Research |
 
 ### Scientific foundations
