@@ -162,8 +162,8 @@ def retrieve_memories_zenbrain(query: str = "*", limit: int = 100) -> list[Memor
                     "id": ep["id"],
                     "content": ep["content"],
                     "layer": "episodic",
-                    "confidence": ep["confidence"],
-                    "emotionalWeight": ep["emotional_weight"],
+                    "confidence": ep.get("confidence", ep.get("emotional_weight", 0.5)),
+                    "emotionalWeight": ep.get("emotional_weight", 0.0),
                     "timestamp": ep["created_at"],
                 }
             )
@@ -188,9 +188,11 @@ def retrieve_memories_zenbrain(query: str = "*", limit: int = 100) -> list[Memor
         raw = raw[:limit]
 
         if not raw:
-            log.warning("ZenBrain returned no memories, falling back to mock")
-            return retrieve_memories_mock()
-
+            log.error("ZenBrain returned no memories — live mode ABORTING (no mock fallback, no writes)")
+            raise RuntimeError(
+                "Dream Cycle aborted: live ZenBrain retrieval returned no memories. "
+                "No insights will be generated or written."
+            )
         memories: list[Memory] = []
         for r in raw:
             memories.append(
@@ -205,8 +207,13 @@ def retrieve_memories_zenbrain(query: str = "*", limit: int = 100) -> list[Memor
             )
         return memories
     except Exception as e:
-        log.warning("ZenBrain recall unavailable (%s), falling back to mock", e)
-        return retrieve_memories_mock()
+        # Integrity rule: NEVER fall back to mock in live retrieval.
+        # Mock-derived insights must never reach the real database.
+        log.error("ZenBrain recall failed (%s) — live mode ABORTING, zero writes", e)
+        raise RuntimeError(
+            f"Dream Cycle aborted: live ZenBrain retrieval unavailable ({e}). "
+            "No insights will be generated or written."
+        ) from e
 
 
 # ===================================================================
@@ -446,22 +453,24 @@ def run_dream_cycle(use_mock: bool = True) -> dict:
     log.info("[6/6] Writing dream journal …")
     entry = write_journal_entry(graph, connections, insights, strength_deltas, edge_stats)
 
-    # Step 7: Persist insights back to ZenBrain so all bots can recall them
-    log.info("[7/7] Persisting insights to ZenBrain …")
+    # Step 7: Persist insights back to ZenBrain so all bots can recall them.
+    # Integrity rule: LLM-generated insights are HYPOTHESES, not facts.
+    # Stored at low confidence + pending review until corroborated or approved.
+    log.info("[7/7] Persisting insights to ZenBrain (as proposed, pending review) …")
     if not use_mock:
         try:
             from zenbrain_client import store_fact
             for insight in insights:
                 title = insight.get("title", "Untitled insight")
                 detail = insight.get("detail", "")
-                content = f"[DREAM INSIGHT] {title}: {detail}"
+                content = f"[PROPOSED INSIGHT — pending review] {title}: {detail}"
                 mem_id = store_fact(
                     content=content,
                     profile="system-bot",
-                    confidence=0.85,
+                    confidence=0.2,
                     source="agent_brain_dream_cycle",
                 )
-                log.info("  → stored insight: %s", mem_id[:8])
+                log.info("  → stored proposed insight: %s", mem_id[:8])
         except Exception as exc:
             log.warning("Could not persist insights to ZenBrain: %s", exc)
 

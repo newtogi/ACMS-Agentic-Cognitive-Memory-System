@@ -1,9 +1,10 @@
-# Agent Brain - L1 Perception Gate Dependencies
-# Uses Ollama HTTP API directly - no additional Python packages required
-# All dependencies are Python standard library (urllib, json)
+# Agent Brain — runtime dependencies
+# L1/L6 talk to Ollama over the HTTP API using only the Python standard library.
+# L7 (memory graph / dream cycle) requires the two packages below.
 
-# Optional: for async support
+networkx>=3.0,<4
+requests>=2.31,<3
+
+# Optional (unused by default):
 # aiohttp>=3.9.0
-
-# Optional: for structured output validation
 # pydantic>=2.0.0

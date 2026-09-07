@@ -59,8 +59,10 @@ def _resolve_zenbrain_dir() -> Path:
 
 ZENBRAIN_DIR = _resolve_zenbrain_dir()
 
-# Profiles that have a ZenBrain database. Add new profiles here as they spin up.
-KNOWN_PROFILES = ["default", "system-bot", "writer", "dummy"]
+# Profiles the dream cycle may read. Cross-profile consolidation is opt-in:
+# edit this list deliberately — do not leave extra profiles in it "just in case".
+# An empty list means single-profile operation (system-bot only).
+KNOWN_PROFILES = ["system-bot"]
 
 
 def _now_iso() -> str:

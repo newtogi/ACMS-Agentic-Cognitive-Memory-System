@@ -159,9 +159,10 @@ agent-brain/
 ├── predictive_engine.py    # L6 — predict + outcome scoring + accuracy stats
 ├── memory_graph.py         # L7 — NetworkX relationship graph
 ├── dream_cycle.py          # L7 — synthesis orchestration + journal
+├── LICENSE                 # MIT
 ├── agent-brain-spec.md     # machine-readable deployment spec (for agents)
 ├── agent-brain-infographic.html
-└── requirements.txt        # stdlib only by default; networkx optional for L7
+└── requirements.txt        # networkx + requests (L7); stdlib otherwise
 ```
 
 ## Credits
