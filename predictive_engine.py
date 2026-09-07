@@ -19,7 +19,12 @@ from typing import Any
 import urllib.request
 import urllib.error
 
+import logging
+
+log = logging.getLogger("agent_brain.predictive")
+
 from pattern_detector import PatternDetector
+
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +68,8 @@ def _ollama_generate(prompt: str, *, system: str = "", temperature: float = 0.3)
         "prompt": prompt,
         "system": system,
         "stream": False,
-        "options": {"temperature": temperature},
+        "format": "json",
+        "options": {"temperature": temperature, "num_predict": 512},
     }).encode()
 
     req = urllib.request.Request(
@@ -150,9 +156,13 @@ class PredictiveEngine:
         system_prompt = (
             "You are the prediction component of an AI agent brain. "
             "Given the current state and historically observed patterns, "
-            "predict the most likely next event or outcome. "
-            "Output ONLY a JSON object with exactly these fields:\n"
-            '{"reasoning": "<one short sentence>", "prediction": "<the predicted outcome>"}'
+            "predict the most likely next event or outcome.\n\n"
+            "Respond with ONLY a JSON object with exactly two keys: "
+            '"reasoning" (one short sentence) and "prediction" (one short sentence).\n'
+            "Never include the word JSON, code fences, or explanations in your answer.\n\n"
+            "Example input: CURRENT STATE: the user just ran the test suite and all tests passed.\n"
+            'Example output: {"reasoning": "Tests passing usually precedes a commit.", '
+            '"prediction": "The user will commit the changes to git."}'
         )
 
         user_prompt = (
@@ -167,6 +177,21 @@ class PredictiveEngine:
         )
 
         clean_prediction = self._parse_prediction(raw_response)
+
+        # Sanity check: a small model may echo the prompt placeholder back
+        # verbatim. Retry once at higher temperature; if it still echoes,
+        # record an explicit template-echo marker instead of fake content.
+        if self._is_template_echo(clean_prediction):
+            log.warning(
+                "Prediction template echo detected (%r) — retrying once", clean_prediction[:60]
+            )
+            raw_response = _ollama_generate(
+                user_prompt, system=system_prompt, temperature=0.7
+            )
+            clean_prediction = self._parse_prediction(raw_response)
+            if self._is_template_echo(clean_prediction):
+                log.error("Prediction still a template echo after retry — marking as unavailable")
+                clean_prediction = "[prediction unavailable: model echoed template]"
 
         pred_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc).isoformat()
@@ -235,6 +260,41 @@ class PredictiveEngine:
 
         # Last resort: return raw trimmed
         return raw.strip()
+
+    @staticmethod
+    def _is_template_echo(prediction: str) -> bool:
+        """Detect a small model echoing the prompt's placeholder back verbatim,
+        emitting a non-answer, or stuffing chain-of-thought into the field."""
+        if not prediction:
+            return True
+        p = prediction.strip().strip('"').strip("'").lower()
+        # Placeholder / non-answer echoes
+        placeholders = {
+            "the predicted outcome",
+            "<the predicted outcome>",
+            "one short sentence",
+            "one sentence",
+            "a short sentence",
+            "sentence",
+            "prediction",
+            "reasoning",
+            "...",
+            "…",
+        }
+        if p in placeholders:
+            return True
+        if p.startswith("<") and p.endswith(">"):
+            return True
+        # Chain-of-thought leakage: the field must be ONE short sentence.
+        # Rambling always re-states the task; a real prediction doesn't.
+        if len(prediction) > 300:
+            return True
+        lower = prediction.lower()
+        if lower.startswith((
+            "first,", "we are given", "the user has provided", "let me", "i think",
+        )):
+            return True
+        return False
 
     # ------------------------------------------------------------------ #
     # record_outcome()
