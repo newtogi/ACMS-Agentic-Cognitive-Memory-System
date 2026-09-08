@@ -110,7 +110,6 @@ from insight_store import promote_approved_to_zenbrain
 promoted = promote_approved_to_zenbrain()
 ok("promotion", f"{len(promoted)} insight(s) promoted") if promoted else fail("promotion", "no promotions")
 
-conn.close()
 update_insight_status(last["id"], "rejected")
 
 # [8] MEMORY GRAPH
