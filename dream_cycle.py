@@ -453,26 +453,28 @@ def run_dream_cycle(use_mock: bool = True) -> dict:
     log.info("[6/6] Writing dream journal …")
     entry = write_journal_entry(graph, connections, insights, strength_deltas, edge_stats)
 
-    # Step 7: Persist insights back to ZenBrain so all bots can recall them.
+    # Step 7: Persist insights via insight_store (local JSON + optional ZenBrain).
     # Integrity rule: LLM-generated insights are HYPOTHESES, not facts.
     # Stored at low confidence + pending review until corroborated or approved.
-    log.info("[7/7] Persisting insights to ZenBrain (as proposed, pending review) …")
-    if not use_mock:
-        try:
-            from zenbrain_client import store_fact
-            for insight in insights:
-                title = insight.get("title", "Untitled insight")
-                detail = insight.get("detail", "")
-                content = f"[PROPOSED INSIGHT — pending review] {title}: {detail}"
-                mem_id = store_fact(
-                    content=content,
-                    profile="system-bot",
-                    confidence=0.2,
-                    source="agent_brain_dream_cycle",
-                )
-                log.info("  → stored proposed insight: %s", mem_id[:8])
-        except Exception as exc:
-            log.warning("Could not persist insights to ZenBrain: %s", exc)
+    log.info("[7/7] Persisting insights to insight_store (pending review) …")
+    try:
+        from insight_store import store_dream_insight
+        for insight in insights:
+            title = insight.get("title", "Untitled insight")
+            detail = insight.get("detail", "")
+            action = insight.get("action", "")
+            priority = insight.get("priority", "medium")
+            insight_id = store_dream_insight(
+                title=title,
+                detail=detail,
+                action=action,
+                priority=priority,
+                source="dream_cycle",
+                confidence=0.2,
+            )
+            log.info("  → stored insight: %s", insight_id)
+    except Exception as exc:
+        log.warning("Could not persist insights: %s", exc)
 
     log.info("═══════════════════════════════════════════")
     log.info("  L7 DREAM CYCLE — complete")

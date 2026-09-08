@@ -3,7 +3,7 @@ memory_graph.py — NetworkX graph operations for the Agent Brain Dream Cycle.
 
 Nodes = memories (with attributes: id, content, layer, context, confidence,
                        emotional_weight, strength, timestamp)
-Edges = relationships (type: co_occurrence | temporal | semantic, weight: float)
+Edges = relationships (type: co_occurrence | temporal | heuristic, weight: float)
 """
 
 from __future__ import annotations
@@ -140,8 +140,8 @@ class MemoryGraph:
                 added += 1
         return added
 
-    def connect_semantic(self, threshold: float = 0.15) -> int:
-        """Edge when memories share context domain or tags (lightweight semantic)."""
+    def connect_heuristic(self, threshold: float = 0.15) -> int:
+        """Edge when memories share context domain or tags (lightweight heuristic (Jaccard + tag overlap))."""
         added = 0
         ids = list(self.G.nodes)
         for i in range(len(ids)):
@@ -157,15 +157,15 @@ class MemoryGraph:
                 if ta and tb:
                     score += 0.6 * len(ta & tb) / len(ta | tb) if (ta | tb) else 0
                 if score >= threshold:
-                    self.G.add_edge(ids[i], ids[j], relation="semantic", weight=round(score, 4))
+                    self.G.add_edge(ids[i], ids[j], relation="heuristic", weight=round(score, 4))
                     added += 1
         return added
 
-    def build_all_edges(self, co_thresh=0.25, temporal_hours=24.0, semantic_thresh=0.15) -> dict[str, int]:
+    def build_all_edges(self, co_thresh=0.25, temporal_hours=24.0, heuristic_thresh=0.15) -> dict[str, int]:
         c = self.connect_co_occurrence(co_thresh)
         t = self.connect_temporal(temporal_hours)
-        s = self.connect_semantic(semantic_thresh)
-        return {"co_occurrence": c, "temporal": t, "semantic": s}
+        s = self.connect_heuristic(heuristic_thresh)
+        return {"co_occurrence": c, "temporal": t, "heuristic": s}
 
     # -- analytics ----------------------------------------------------------
 

@@ -216,6 +216,72 @@ def _row_to_episode(row: sqlite3.Row) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# SCHEMA VALIDATION & BACKUP
+# --------------------------------------------------------------------------- #
+
+# Expected schema version — bump when tables/columns change
+# Required tables and columns (the schema our code depends on).
+# Used by validate_schema() to catch silent corruption or ZenBrain upgrades
+# that remove/rename tables we write to.
+REQUIRED_SCHEMA: dict[str, list[str]] = {
+    "episodic_memories":      ["id", "content", "emotional_weight", "created_at"],
+    "learned_facts":          ["id", "content", "confidence", "source", "created_at"],
+    "procedural_memories":    ["id", "trigger", "steps", "outcome", "created_at"],
+    "core_memory_blocks":     ["id", "label", "content", "pinned"],
+    "cross_context_links":    ["id", "entity_a", "entity_b", "created_at"],
+}
+
+
+def validate_schema(profile: str = "system-bot") -> dict[str, list[str]]:
+    """
+    Check that the expected ZenBrain tables and columns exist.
+
+    Returns a dict mapping each table to its actual columns.
+    Raises RuntimeError if any required table or column is missing — this
+    protects against silent corruption after a ZenBrain upgrade.
+    """
+    conn = _connect(profile)
+    try:
+        missing: list[str] = []
+        schema: dict[str, list[str]] = {}
+        for table, required_cols in REQUIRED_SCHEMA.items():
+            rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+            actual_cols = {r[1] for r in rows}
+            schema[table] = sorted(actual_cols)
+            for col in required_cols:
+                if col not in actual_cols:
+                    missing.append(f"{table}.{col}")
+        if missing:
+            raise RuntimeError(
+                f"Schema validation failed for profile '{profile}': "
+                f"missing columns: {', '.join(missing)}"
+            )
+        return schema
+    finally:
+        conn.close()
+
+
+def backup_before_write(profile: str = "system-bot") -> Path | None:
+    """
+    Create a timestamped backup of the database before a write operation.
+
+    Copies zenbrain-{profile}.db to zenbrain-{profile}.{timestamp}.backup
+    in the same directory. Returns the backup path, or None if the DB doesn't
+    exist yet (first-time setup).
+    """
+    src = _db_path(profile)
+    if not src.exists():
+        return None
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    backup_path = src.parent / f"zenbrain-{profile}.{timestamp}.backup"
+
+    import shutil
+    shutil.copy2(str(src), str(backup_path))
+    return backup_path
+
+
+# --------------------------------------------------------------------------- #
 # WRITE: store new memories
 # --------------------------------------------------------------------------- #
 
@@ -228,6 +294,7 @@ def store_episode(
     metadata: dict | None = None,
 ) -> str:
     """Store an episodic memory. Returns the new memory ID."""
+    backup_before_write(profile)
     memory_id = str(uuid.uuid4())
     conn = _connect(profile)
     try:
@@ -260,6 +327,7 @@ def store_fact(
     source: str = "agent_brain",
 ) -> str:
     """Store a semantic fact. Returns the new memory ID."""
+    backup_before_write(profile)
     memory_id = str(uuid.uuid4())
     conn = _connect(profile)
     try:

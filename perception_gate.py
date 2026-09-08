@@ -126,15 +126,18 @@ def perceive(data: str, *, profile: str = "system-bot", persist: bool = True) ->
     try:
         model_output = _call_ollama(prompt)
     except (ConnectionError, ValueError) as e:
-        # Fallback to noise classification if model unavailable
-        return PerceptionResult(
+        # Degraded state: model unavailable — defer processing, don't persist
+        result = PerceptionResult(
             category="noise",
             salience=0.1,
-            action="discard",
-            reasoning=f"Model unavailable: {str(e)}",
+            action="defer",
+            reasoning=f"Model unavailable — deferred: {str(e)}",
             raw_input=data,
             timestamp=datetime.now().isoformat()
         ).to_dict()
+        result["status"] = "deferred"
+        result["persisted"] = False
+        return result
 
     # Extract and validate fields
     category = model_output.get("category", "noise")
@@ -157,9 +160,10 @@ def perceive(data: str, *, profile: str = "system-bot", persist: bool = True) ->
     )
 
     out = result.to_dict()
+    out["status"] = "active"
 
-    # Persist to ZenBrain if salience is high enough
-    if persist and salience >= SALIENCE_MEDIUM_THRESHOLD:
+    # Persist to ZenBrain if salience is high enough and not in deferred state
+    if persist and salience >= SALIENCE_MEDIUM_THRESHOLD and out.get("status") != "deferred":
         try:
             from zenbrain_client import store_episode
             memory_id = store_episode(

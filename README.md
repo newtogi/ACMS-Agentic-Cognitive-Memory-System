@@ -67,7 +67,7 @@ Triggers, hooks, and schedules are **harness policy** — wire them however your
 |---|---|---|---|
 | **L1 Perception Gate** | `perceive(data) → dict` | Classifies [event\|fact\|emotion\|threat\|noise], scores salience 0–1, recommends [encode\|discard\|escalate]. **The gate is not a logger** — below threshold, the input is dropped. | Local VLM, 1–2B |
 | **L6 Predictive Engine** | `predict(state)` · `record_outcome(id, outcome)` | Scans episodic sequences, predicts the next outcome with confidence. **Predictions must be testable** — every one gets an ID, and outcomes score against it. | Local text LLM, 1–2B |
-| **L7 Dream Cycle** | `run_dream_cycle(live) → journal` | Offline synthesis, **never inline**. Builds a NetworkX graph (co-occurrence, temporal, semantic edges), finds cross-domain connections, generates insights, boosts connected memories, decays isolated ones. | Same VLM as L1 |
+| **L7 Dream Cycle** | `run_dream_cycle(live) → journal` | Offline synthesis, **never inline**. Builds a NetworkX graph (co-occurrence, temporal, heuristic edges), finds cross-domain connections, generates insights, boosts connected memories, decays isolated ones. | Same VLM as L1 |
 
 ### The learning loop
 
@@ -157,12 +157,15 @@ agent-brain/
 ├── perception_gate.py      # L1 — classify + salience + auto-store
 ├── pattern_detector.py     # L6 — sequence mining, cause-effect extraction
 ├── predictive_engine.py    # L6 — predict + outcome scoring + accuracy stats
-├── memory_graph.py         # L7 — NetworkX relationship graph
+├── memory_graph.py         # L7 — NetworkX heuristic relationship graph
 ├── dream_cycle.py          # L7 — synthesis orchestration + journal
+├── insight_store.py        # L7 — pending/approved/rejected insight lifecycle
 ├── LICENSE                 # MIT
 ├── agent-brain-spec.md     # machine-readable deployment spec (for agents)
 ├── agent-brain-infographic.html
-└── requirements.txt        # networkx + requests (L7); stdlib otherwise
+├── requirements.txt        # networkx + requests (L7); stdlib otherwise
+└── tests/
+    └── test_brain.py       # 14-point integrity test suite (pytest)
 ```
 
 ## Credits
@@ -182,3 +185,4 @@ Ebbinghaus (1885) *Über das Gedächtnis* · Hebb (1949) *The Organization of Be
 ## License
 
 Brain code: MIT. ZenBrain: Apache-2.0 (per its repo). Model licenses per their model cards.
+- `tests/test_brain.py` — 14-point integrity test suite (pytest)
