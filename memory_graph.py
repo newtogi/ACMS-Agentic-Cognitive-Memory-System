@@ -59,13 +59,17 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 
 
 def _parse_ts(iso: str) -> datetime | None:
-    for fmt in ("%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-        try:
-            return datetime.fromisoformat(iso.rstrip("Z"))
-        except (ValueError, AttributeError):
-            continue
-    return None
+    """Parse an ISO timestamp, always returning a naive (tz-unaware) datetime.
+
+    The graph only needs relative ordering for temporal proximity, so
+    stripping tzinfo avoids the 'can't compare offset-naive and
+    offset-aware datetimes' crash when ZenBrain mixes formats.
+    """
+    try:
+        dt = datetime.fromisoformat(iso.rstrip("Z"))
+        return dt.replace(tzinfo=None)
+    except (ValueError, AttributeError):
+        return None
 
 
 # ---------------------------------------------------------------------------

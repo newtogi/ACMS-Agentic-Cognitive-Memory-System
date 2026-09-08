@@ -168,25 +168,30 @@ def get_cross_context_links(profile: str = "system-bot") -> list[dict]:
 
 
 def recall(query: str, profile: str = "system-bot", limit: int = 10) -> list[dict]:
-    """Simple LIKE-based recall across episodic + semantic + procedural layers.
+    """Simple LIKE-based recall across all memory layers.
 
-    For vector recall, use the MCP `zenbrain_recall` tool. This is the
-    quick SQL fallback for the Agent Brain's hot loops.
+    Each table has different column names for its content, so the search
+    columns vary per table. For vector recall, use the MCP ``zenbrain_recall``
+    tool instead — this is the fast SQL fallback for hot loops.
     """
     conn = _connect(profile)
     try:
         pattern = f"%{query}%"
         results: list[dict] = []
 
-        for table, layer in (
-            ("episodic_memories", "episodic"),
-            ("learned_facts", "semantic"),
-            ("procedural_memories", "procedural"),
-            ("core_memory_blocks", "core"),
-        ):
+        # (table, layer, searchable columns)
+        tables = [
+            ("episodic_memories", "episodic", ["content"]),
+            ("learned_facts", "semantic", ["content"]),
+            ("procedural_memories", "procedural", ["trigger", "steps", "outcome"]),
+            ("core_memory_blocks", "core", ["content"]),
+        ]
+        for table, layer, cols in tables:
+            where = " OR ".join(f"{c} LIKE ?" for c in cols)
+            params = [pattern] * len(cols) + [limit]
             rows = conn.execute(
-                f"SELECT id, content FROM {table} WHERE content LIKE ? LIMIT ?",
-                (pattern, limit),
+                f"SELECT id, {cols[0]} AS content FROM {table} WHERE {where} LIMIT ?",
+                params,
             ).fetchall()
             for r in rows:
                 results.append({"id": r["id"], "content": r["content"], "layer": layer})
