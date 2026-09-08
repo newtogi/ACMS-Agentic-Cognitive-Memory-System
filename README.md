@@ -184,5 +184,7 @@ Ebbinghaus (1885) *Über das Gedächtnis* · Hebb (1949) *The Organization of Be
 
 ## License
 
-Brain code: MIT. ZenBrain: Apache-2.0 (per its repo). Model licenses per their model cards.
+Brain code: MIT. ZenBrain: Apache-2.0 
+
+per its repo). Model licenses per their model cards.
 - `tests/test_brain.py` — 14-point integrity test suite (pytest)
