@@ -58,7 +58,7 @@ from perception_gate import perceive
 t0 = time.time()
 r1 = perceive("The supervisor has approved the revised document", persist=True)
 lat = time.time() - t0
-ok("category", r1["category"]) if r1["category"] in ("event","fact","emotion","threat","noise") else fail("category")
+ok("category", r1["category"]) if r1["category"] in ("episodic","semantic","procedural","emotional","perceptual","social","noise") else fail("category")
 ok("salience", f"{r1['salience']}") if 0<=r1["salience"]<=1 else fail("salience")
 ok("latency", f"{lat:.1f}s") if lat<30 else fail("latency")
 ok("persisted", r1.get("memory_id","")[:12]) if r1.get("memory_id") else fail("persisted")
