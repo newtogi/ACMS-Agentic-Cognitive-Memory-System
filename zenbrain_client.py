@@ -62,7 +62,7 @@ ZENBRAIN_DIR = _resolve_zenbrain_dir()
 # Profiles the dream cycle may read. Cross-profile consolidation is opt-in:
 # edit this list deliberately — do not leave extra profiles in it "just in case".
 # An empty list means single-profile operation (system-bot only).
-KNOWN_PROFILES = ["default", "system-bot", "writer"]
+KNOWN_PROFILES = ["default", "system-bot", "writer", "webhunter"]
 
 
 def _now_iso() -> str:
