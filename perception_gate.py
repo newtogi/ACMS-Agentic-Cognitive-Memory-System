@@ -2,7 +2,7 @@
 Agent Brain L1 - Perception Gate
 
 Classifies incoming text data into categories and determines salience.
-Uses MiniCPM-V 4.6 via Ollama API for classification.
+Uses qwen2.5:7b via Ollama API for classification.
 """
 
 import json
@@ -43,43 +43,34 @@ class PerceptionResult:
         }
 
 
-PERCEPTION_PROMPT = """You are a perception filter for an AI agent brain. Analyze the following input data and classify it.
+# Evolved prompt from darwinian-evolver (100% on 8 edge cases)
+PERCEPTION_PROMPT = """Look at this text and tell me what it is.
 
-You MUST respond with ONLY a valid JSON object (no markdown, no explanation) with these fields:
-- category: one of ["event", "fact", "emotion", "threat", "noise"]
-- salience: a number between 0.0 and 1.0 indicating importance
-- reasoning: brief explanation of your classification
+{data}
 
-Category definitions:
-- event: Something that happened or is happening (actions, occurrences, state changes)
-- fact: Information, knowledge, data points (static information)
-- emotion: Emotional content, feelings, sentiment expressed
-- threat: Potential danger, risk, warning, urgent issue
-- noise: Irrelevant, meaningless, or unprocessable data
-
-Salience guidelines:
-- 0.8-1.0: Critical, immediate attention needed
-- 0.5-0.8: Important, should be processed
-- 0.2-0.5: Moderate relevance
-- 0.0-0.2: Low priority, can be deprioritized
-
-Input data to analyze:
-{data}"""
+Return a JSON answer with the following structure:
+{{
+  "category": "{{category}}",
+  "salience": {{salience}},
+  "action": "{{action}}",
+  "reasoning": "{{reasoning}}"
+}}
+Remember to use only these categories: episodic, semantic, procedural, emotional, perceptual, social, noise.
+Use only these actions: persist, discard, escalate, defer.
+Keep salience between 0.0 and 1.0."""
 
 
 def _call_ollama(prompt: str) -> dict:
     """Call Ollama API with the given prompt and return structured response."""
-    url = f"{OLLAMA_BASE_URL}/api/generate"
+    url = f"{OLLAMA_BASE_URL}/v1/chat/completions"
 
     payload = {
         "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-        "format": "json",
-        "options": {
-            "temperature": 0.1,
-            "num_predict": 256
-        }
+        "max_tokens": 256,
+        "messages": [
+            {"role": "system", "content": "You are a JSON classifier. Return ONLY a valid JSON object. No markdown, no explanation."},
+            {"role": "user", "content": prompt},
+        ],
     }
 
     data = json.dumps(payload).encode('utf-8')
@@ -89,8 +80,19 @@ def _call_ollama(prompt: str) -> dict:
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
             result = json.loads(response.read().decode('utf-8'))
-            response_text = result.get('response', '{}')
-            return json.loads(response_text)
+            raw = result.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            
+            # Extract JSON from response (handle markdown fences)
+            clean = raw.replace("```json", "").replace("```", "").strip()
+            
+            # Try to parse JSON
+            import re
+            match = re.search(r'\{.+\}', clean, re.DOTALL)
+            if match:
+                return json.loads(match.group())
+            else:
+                # Fallback: try to parse the whole response
+                return json.loads(clean)
     except urllib.error.URLError as e:
         raise ConnectionError(f"Failed to connect to Ollama at {OLLAMA_BASE_URL}: {e}")
     except json.JSONDecodeError as e:
@@ -147,7 +149,11 @@ def perceive(data: str, *, profile: str = "system-bot", persist: bool = True) ->
     salience = float(model_output.get("salience", 0.5))
     salience = max(0.0, min(1.0, salience))  # Clamp to [0, 1]
 
-    action = _determine_action(salience)
+    # Use model's action if provided, otherwise determine from salience
+    action = model_output.get("action", "")
+    if action not in ["persist", "discard", "escalate", "defer"]:
+        action = _determine_action(salience)
+
     reasoning = model_output.get("reasoning", "No reasoning provided")
 
     result = PerceptionResult(

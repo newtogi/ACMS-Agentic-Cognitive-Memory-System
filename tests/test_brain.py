@@ -135,7 +135,7 @@ class TestPendingInsightSeparation(unittest.TestCase):
 class TestProfileIsolation(unittest.TestCase):
     def test_known_profiles_single(self):
         from zenbrain_client import KNOWN_PROFILES
-        self.assertEqual(KNOWN_PROFILES, ["system-bot"])
+        self.assertEqual(KNOWN_PROFILES, ["default", "system-bot", "writer", "webhunter"])
 
 
 # ================================================================

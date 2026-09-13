@@ -5,10 +5,10 @@ Model names and thresholds for the perception layer.
 
 # Ollama API configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "minicpm-v4.6"
+OLLAMA_MODEL = "qwen2.5:7b"
 
 # Perception categories
-CATEGORIES = ["event", "fact", "emotion", "threat", "noise"]
+CATEGORIES = ["episodic", "semantic", "procedural", "emotional", "perceptual", "social", "noise"]
 
 # Salience thresholds
 SALIENCE_HIGH_THRESHOLD = 0.7    # Above this: escalate
